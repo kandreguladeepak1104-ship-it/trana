@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRANA | Upload Papers</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .upload-message { min-height: 18px; margin-top: 12px; font-size: 13px; color: #a2513f; }
+        .time-picker { display: flex; gap: 10px; }
+        .time-picker select {
+            flex: 1;
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #dfe3da;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            background: #fbfcf9;
+        }
+        .time-picker select:focus { border-color: #536b50; background: white; outline: none; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">TRANA</div>
+        <p class="menu-title">MAIN MENU</p>
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item"><span>▦</span> Dashboard</a>
+            <a href="papers.html" class="menu-item"><span>📄</span> Papers</a>
+            <a href="upload.html" class="menu-item active"><span>＋</span> Upload Papers</a>
+            <a href="encryption.html" class="menu-item"><span>🔐</span> Encryption</a>
+            <a href="scheduled.html" class="menu-item"><span>◷</span> Scheduled</a>
+        </nav>
+        <p class="menu-title security-title">SYSTEM</p>
+        <nav class="sidebar-menu">
+            <a href="settings.html" class="menu-item"><span>⚙</span> Settings</a>
+            <a href="login.html" class="menu-item logout" onclick="logout(event)"><span>↪</span> Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="secure-dot"></div>
+            <div><strong>System Secure</strong><p>TRANA v2.4</p></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="welcome-small">TRANA ADMINISTRATION</p>
+                <h1>Upload Papers</h1>
+            </div>
+            <div class="profile">
+                <div class="notification">♢</div>
+                <div class="avatar" data-admin-initial>A</div>
+                <div class="profile-info">
+                    <strong data-admin-name>Administrator</strong>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="upload-page">
+
+            <div class="page-heading">
+                <h2>Upload Examination Paper</h2>
+                <p>Add a new examination paper. It is encrypted automatically when saved.</p>
+            </div>
+
+            <div class="upload-card">
+                <form id="uploadForm" novalidate>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paperName">Paper Name</label>
+                            <input type="text" id="paperName" placeholder="Enter paper name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject" placeholder="Enter subject" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="examDate">Examination Date</label>
+                            <input type="date" id="examDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Examination Time</label>
+                            <div class="time-picker">
+                                <select id="examHour" aria-label="Hour"></select>
+                                <select id="examMinute" aria-label="Minute"></select>
+                                <select id="examPeriod" aria-label="AM or PM">
+                                    <option value="AM">AM</option>
+                                    <option value="PM">PM</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Examination Paper</label>
+                        <label class="file-upload" id="fileUploadBox">
+                            <input type="file" id="paperFile" accept=".pdf,.doc,.docx" required>
+                            <div class="upload-icon" id="fileIcon">↑</div>
+                            <strong id="fileName">Choose examination paper</strong>
+                            <span id="fileStatus">PDF, DOC or DOCX</span>
+                        </label>
+                    </div>
+
+                    <div class="security-notice">
+                        <span>🔐</span>
+                        <div>
+                            <strong>Secure Upload</strong>
+                            <p>Your examination paper is encrypted on the server before it is stored.</p>
+                        </div>
+                    </div>
+
+                    <p class="upload-message" id="uploadMessage"></p>
+
+                    <div class="form-actions">
+                        <a href="dashboard.html" class="cancel-btn">Cancel</a>
+                        <button type="submit" class="submit-btn" id="submitBtn">Upload Paper</button>
+                    </div>
+
+                </form>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        requireLogin();
+
+        const paperFile = document.getElementById("paperFile");
+        const uploadForm = document.getElementById("uploadForm");
+        const uploadMessage = document.getElementById("uploadMessage");
+        const submitBtn = document.getElementById("submitBtn");
+        const examDate = document.getElementById("examDate");
+        const examHour = document.getElementById("examHour");
+        const examMinute = document.getElementById("examMinute");
+        const examPeriod = document.getElementById("examPeriod");
+
+        function pad(n) {
+            return String(n).padStart(2, "0");
+        }
+
+        /* Today's date in local time, as YYYY-MM-DD */
+        function todayString() {
+            const t = new Date();
+            return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
+        }
+
+        /* Fill the 12-hour dropdowns and set a default of 9:00 AM */
+        function fillTimeOptions() {
+            examHour.innerHTML = Array.from({ length: 12 }, (_, i) =>
+                `<option value="${i + 1}">${i + 1}</option>`
+            ).join("");
+
+            examMinute.innerHTML = Array.from({ length: 60 }, (_, i) =>
+                `<option value="${i}">${pad(i)}</option>`
+            ).join("");
+
+            examHour.value = "9";
+            examMinute.value = "0";
+            examPeriod.value = "AM";
+        }
+
+        /* Convert the 12-hour choice to 24-hour hour and minute */
+        function selectedTime() {
+            let hour = Number(examHour.value) % 12;
+            if (examPeriod.value === "PM") hour += 12;
+            return { hour, minute: Number(examMinute.value) };
+        }
+
+        /* Block past dates in the picker */
+        examDate.min = todayString();
+        fillTimeOptions();
+
+        paperFile.addEventListener("change", function () {
+            if (this.files.length > 0) {
+                document.getElementById("fileName").textContent = this.files[0].name;
+                document.getElementById("fileStatus").textContent = "✓ File selected";
+                document.getElementById("fileIcon").textContent = "📄";
+                document.getElementById("fileUploadBox").classList.add("file-selected");
+            }
+        });
+
+        uploadForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            uploadMessage.textContent = "";
+
+            const name = document.getElementById("paperName").value.trim();
+            const subject = document.getElementById("subject").value.trim();
+            const date = examDate.value;
+            const file = paperFile.files[0];
+
+            if (!name || !subject) {
+                uploadMessage.textContent = "Enter the paper name and subject.";
+                return;
+            }
+            if (!date) {
+                uploadMessage.textContent = "Choose the examination date.";
+                return;
+            }
+            if (!file) {
+                uploadMessage.textContent = "Choose a paper file first.";
+                return;
+            }
+
+            /* Build the exam start from the date and the 12-hour picker */
+            const [year, month, day] = date.split("-").map(Number);
+            const { hour, minute } = selectedTime();
+            const examAt = new Date(year, month - 1, day, hour, minute);
+
+            if (examAt <= new Date()) {
+                uploadMessage.textContent = "The examination date and time must be in the future.";
+                return;
+            }
+
+            const examTime24 = `${pad(hour)}:${pad(minute)}`;
+
+            const formData = new FormData();
+            formData.append("name", name);
+            formData.append("subject", subject);
+            formData.append("examDate", date);
+            formData.append("examTime", examTime24);
+            formData.append("file", file);
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Uploading...";
+
+            try {
+                await api("/papers", { method: "POST", body: formData });
+                alert("Examination paper uploaded successfully!");
+                window.location.href = "dashboard.html";
+            } catch (err) {
+                uploadMessage.textContent = err.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Upload Paper";
+            }
+        });
+    </script>
+
+</body>
+</html>

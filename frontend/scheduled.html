@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRANA | Scheduled Release</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .schedule-page { padding: 30px 35px; }
+        .schedule-page .page-heading { margin-bottom: 25px; }
+        .schedule-page .page-heading h2 { font-size: 22px; margin-bottom: 7px; }
+        .schedule-page .page-heading p { color: #7b827a; font-size: 14px; }
+        .schedule-stack { display: grid; gap: 25px; max-width: 900px; }
+        .schedule-card { background: white; border: 1px solid #e5e8df; border-radius: 14px; padding: 28px; }
+        .schedule-card h3 { font-size: 17px; margin-bottom: 6px; }
+        .schedule-card > p { color: #7b827a; font-size: 13px; margin-bottom: 22px; }
+        .form-group select { width: 100%; padding: 13px 14px; border: 1px solid #dfe3da; border-radius: 8px; outline: none; font-family: inherit; font-size: 14px; background: #fbfcf9; }
+        .form-group select:focus { border-color: #536b50; background: white; }
+        .time-picker { display: flex; gap: 10px; }
+        .time-picker select { flex: 1; }
+        .form-message { min-height: 18px; margin-top: 6px; font-size: 13px; }
+        .form-message.error { color: #a2513f; }
+        .form-message.success { color: #536b50; }
+        .schedule-table .table-head,
+        .schedule-table .table-row { grid-template-columns: 2.2fr 1.6fr 1.2fr 0.9fr; padding: 15px 22px; }
+        .schedule-table .table-row { font-size: 12px; }
+        .schedule-table .table-row .paper-name strong { font-size: 13px; }
+        .link-btn { background: none; border: none; padding: 0; color: #a2513f; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .locked-note { display: flex; gap: 12px; align-items: center; padding: 16px; border-radius: 9px; background: #f1f5ed; border: 1px solid #dce5d7; font-size: 13px; color: #5f6a5d; }
+        .release-state { font-size: 12px; font-weight: 600; }
+        .release-state.waiting { color: #ad8d54; }
+        .release-state.released { color: #536b50; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">TRANA</div>
+        <p class="menu-title">MAIN MENU</p>
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item"><span>▦</span> Dashboard</a>
+            <a href="papers.html" class="menu-item"><span>📄</span> Papers</a>
+            <a href="upload.html" class="menu-item"><span>＋</span> Upload Papers</a>
+            <a href="encryption.html" class="menu-item"><span>🔐</span> Encryption</a>
+            <a href="scheduled.html" class="menu-item active"><span>◷</span> Scheduled</a>
+        </nav>
+        <p class="menu-title security-title">SYSTEM</p>
+        <nav class="sidebar-menu">
+            <a href="settings.html" class="menu-item"><span>⚙</span> Settings</a>
+            <a href="login.html" class="menu-item logout" onclick="logout(event)"><span>↪</span> Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="secure-dot"></div>
+            <div><strong>System Secure</strong><p>TRANA v2.4</p></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="welcome-small">TRANA ADMINISTRATION</p>
+                <h1>Scheduled Release</h1>
+            </div>
+            <div class="profile">
+                <div class="notification">♢</div>
+                <div class="avatar" data-admin-initial>A</div>
+                <div class="profile-info">
+                    <strong data-admin-name>Administrator</strong>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="schedule-page">
+
+            <div class="page-heading">
+                <h2>Schedule Release</h2>
+                <p>Every paper is encrypted when uploaded. Choose the time it is released (decrypted) for students.</p>
+            </div>
+
+            <div class="schedule-stack">
+
+                <!-- NEW SCHEDULE -->
+                <div class="schedule-card">
+                    <h3>Set release time</h3>
+                    <p>Pick an encrypted paper and the time it should be released. The release must be now or later, and before the exam starts.</p>
+
+                    <div id="noPapers" class="locked-note" hidden>
+                        <span>🔐</span>
+                        <span>No encrypted papers yet. <a href="upload.html">Upload a paper</a> first.</span>
+                    </div>
+
+                    <form id="scheduleForm" hidden novalidate>
+                        <div class="form-group">
+                            <label for="paperSelect">Encrypted paper</label>
+                            <select id="paperSelect"></select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="releaseDate">Release date</label>
+                                <input type="date" id="releaseDate" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Release time</label>
+                                <div class="time-picker">
+                                    <select id="releaseHour" aria-label="Hour"></select>
+                                    <select id="releaseMinute" aria-label="Minute"></select>
+                                    <select id="releasePeriod" aria-label="AM or PM">
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn" id="scheduleBtn">Schedule Release</button>
+                        </div>
+
+                        <p class="form-message" id="formMessage"></p>
+                    </form>
+                </div>
+
+                <!-- SCHEDULED PAPERS -->
+                <div class="table-card schedule-table">
+
+                    <div class="section-header" style="padding:22px;">
+                        <div>
+                            <h2 style="font-size:18px;">Scheduled releases</h2>
+                            <p style="margin-top:5px;color:#7b827a;font-size:12px;">When each encrypted paper is released</p>
+                        </div>
+                    </div>
+
+                    <div id="scheduledTable" hidden>
+                        <div class="table-head">
+                            <div>Paper</div>
+                            <div>Release Time</div>
+                            <div>State</div>
+                            <div>Actions</div>
+                        </div>
+                        <div id="scheduledRows"></div>
+                    </div>
+
+                    <div class="empty-state" id="scheduledEmpty" hidden>
+                        <div class="empty-icon">◷</div>
+                        <h3>Nothing scheduled</h3>
+                        <p>Papers you schedule for release will appear here.</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        requireLogin();
+
+        const scheduleForm = document.getElementById("scheduleForm");
+        const paperSelect = document.getElementById("paperSelect");
+        const releaseDate = document.getElementById("releaseDate");
+        const scheduleBtn = document.getElementById("scheduleBtn");
+        const formMessage = document.getElementById("formMessage");
+        const hourSelect = document.getElementById("releaseHour");
+        const minuteSelect = document.getElementById("releaseMinute");
+        const periodSelect = document.getElementById("releasePeriod");
+
+        const papersById = {};
+
+        function pad(n) {
+            return String(n).padStart(2, "0");
+        }
+
+        /* Today's date in local time, as YYYY-MM-DD */
+        function todayString() {
+            const t = new Date();
+            return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
+        }
+
+        /* Fill the hour (1-12) and minute (00-59) dropdowns, default 9:00 AM */
+        function fillTimeOptions() {
+            hourSelect.innerHTML = Array.from({ length: 12 }, (_, i) =>
+                `<option value="${i + 1}">${i + 1}</option>`
+            ).join("");
+
+            minuteSelect.innerHTML = Array.from({ length: 60 }, (_, i) =>
+                `<option value="${i}">${pad(i)}</option>`
+            ).join("");
+
+            hourSelect.value = "9";
+            minuteSelect.value = "0";
+            periodSelect.value = "AM";
+        }
+
+        /* Convert the 12-hour choice to 24-hour hour and minute */
+        function selectedTime() {
+            let hour = Number(hourSelect.value) % 12;
+            if (periodSelect.value === "PM") hour += 12;
+            return { hour, minute: Number(minuteSelect.value) };
+        }
+
+        function showMessage(text, type) {
+            formMessage.textContent = text;
+            formMessage.className = "form-message " + (type || "");
+        }
+
+        async function renderSchedule() {
+            const papers = await api("/papers");
+
+            papers.forEach(p => papersById[p.id] = p);
+
+            /* Papers that can still be scheduled (no release time yet) */
+            const unscheduled = papers.filter(p => !p.scheduled);
+            const scheduled = papers.filter(p => p.scheduled);
+
+            document.getElementById("noPapers").hidden = papers.length > 0;
+            scheduleForm.hidden = unscheduled.length === 0;
+
+            paperSelect.innerHTML = unscheduled.map(p =>
+                `<option value="${p.id}">${escapeHtml(p.name)} (exam: ${formatExamDate(p.examAt)})</option>`
+            ).join("");
+
+            /* Scheduled list */
+            const now = Date.now();
+            document.getElementById("scheduledTable").hidden = scheduled.length === 0;
+            document.getElementById("scheduledEmpty").hidden = scheduled.length > 0;
+
+            document.getElementById("scheduledRows").innerHTML = scheduled.map(p => {
+                const released = new Date(p.releaseAt).getTime() <= now;
+                const state = released
+                    ? '<span class="release-state released">✓ Released</span>'
+                    : '<span class="release-state waiting">◷ Waiting</span>';
+
+                const action = released
+                    ? '<span style="color:#7b827a;font-size:12px;">—</span>'
+                    : `<button class="link-btn" onclick="cancelSchedule(${p.id})">Cancel</button>`;
+
+                return `
+                <div class="table-row">
+                    ${paperNameCell(p)}
+                    <div>${formatExamDate(p.releaseAt)}</div>
+                    <div>${state}</div>
+                    <div>${action}</div>
+                </div>`;
+            }).join("");
+        }
+
+        scheduleForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            showMessage("", "");
+
+            const paper = papersById[paperSelect.value];
+            const date = releaseDate.value;
+
+            if (!paper) {
+                showMessage("Choose a paper.", "error");
+                return;
+            }
+            if (!date) {
+                showMessage("Choose a release date.", "error");
+                return;
+            }
+
+            /* Build the release moment from the date and the 12-hour picker */
+            const [year, month, day] = date.split("-").map(Number);
+            const { hour, minute } = selectedTime();
+            const releaseAt = new Date(year, month - 1, day, hour, minute);
+
+            if (releaseAt <= new Date()) {
+                showMessage("Release time must be in the future. Choose a later time.", "error");
+                return;
+            }
+
+            if (releaseAt >= new Date(paper.examAt)) {
+                showMessage("Release must be before the exam starts (" + formatExamDate(paper.examAt) + ").", "error");
+                return;
+            }
+
+            if (!confirm("Release this paper on " + formatExamDate(releaseAt.toISOString()) + "?")) {
+                return;
+            }
+
+            scheduleBtn.disabled = true;
+            try {
+                await api("/papers/" + paper.id + "/schedule", {
+                    method: "POST",
+                    body: { releaseAt: releaseAt.toISOString() }
+                });
+                scheduleForm.reset();
+                releaseDate.min = todayString();
+                fillTimeOptions();
+                showMessage("Release scheduled successfully.", "success");
+                renderSchedule();
+            } catch (err) {
+                showMessage(err.message, "error");
+            } finally {
+                scheduleBtn.disabled = false;
+            }
+        });
+
+        async function cancelSchedule(id) {
+            if (!confirm("Cancel this scheduled release?")) return;
+            try {
+                await api("/papers/" + id + "/schedule", { method: "DELETE" });
+                renderSchedule();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        /* Block past dates in the picker */
+        releaseDate.min = todayString();
+        fillTimeOptions();
+        renderSchedule().catch(err => alert(err.message));
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TRANA - Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css(signup).css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- SIGN UP BOX -->
+    <div class="signup-box">
+
+        <h1>welcome aboard,</h1>
+
+        <p class="subtitle">
+            let's get you started....
+        </p>
+
+        <form id="signupForm" novalidate>
+
+            <p class="details">
+                create your account
+            </p>
+
+            <label for="fullName">enter your full name</label>
+            <input type="text" id="fullName" placeholder="Full name" autocomplete="name" required>
+
+            <label for="username">enter your username</label>
+            <input type="text" id="username" placeholder="Username" autocomplete="username" required>
+
+            <label for="email">enter your email</label>
+            <input type="email" id="email" placeholder="Email" autocomplete="email" required>
+
+            <label for="password">create your password</label>
+            <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" required>
+
+            <label for="confirmPassword">confirm your password</label>
+            <input type="password" id="confirmPassword" placeholder="Confirm password" autocomplete="new-password" required>
+
+            <p id="message" style="margin-top:15px;font-size:14px;min-height:20px;color:#a2513f;"></p>
+
+            <button type="submit" id="signupBtn">CREATE ACCOUNT</button>
+
+        </form>
+
+        <a href="login.html" class="login-link">
+            already have an account? login
+        </a>
+
+    </div>
+
+
+    <!-- SYSTEM OVERVIEW -->
+    <div class="overview">
+
+        <p class="small-title">SYSTEM OVERVIEW</p>
+
+        <h2>TRANA</h2>
+
+        <p class="description">
+            Secure end-to-end encryption for high-stakes assessments -
+            from creation to delivery.
+        </p>
+
+        <hr>
+
+        <div class="security">
+            🔒
+        </div>
+
+        <div class="documents">
+            📄 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 📄
+        </div>
+
+        <div class="bottom">
+            🔒 AES-256 | RSA | SHA-256 | Digital Signatures
+
+            <span>
+                🛡 Secure &nbsp; System v2.4
+            </span>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="api.js"></script>
+<script>
+    const signupForm = document.getElementById("signupForm");
+    const signupBtn = document.getElementById("signupBtn");
+    const message = document.getElementById("message");
+
+    function showMessage(text, ok) {
+        message.textContent = text;
+        message.style.color = ok ? "#536b50" : "#a2513f";
+    }
+
+    signupForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        showMessage("", true);
+
+        const name = document.getElementById("fullName").value.trim();
+        const username = document.getElementById("username").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        if (!name || !username || !email || !password) {
+            showMessage("Please fill in all fields.", false);
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showMessage("Passwords do not match.", false);
+            return;
+        }
+
+        signupBtn.disabled = true;
+        signupBtn.textContent = "CREATING...";
+
+        try {
+            await api("/auth/signup", {
+                method: "POST",
+                body: { name, username, email, password }
+            });
+
+            alert("Account created. Please log in.");
+            window.location.href = "login.html";
+
+        } catch (err) {
+            showMessage(err.message, false);
+            signupBtn.disabled = false;
+            signupBtn.textContent = "CREATE ACCOUNT";
+        }
+    });
+</script>
+
+</body>
+</html>

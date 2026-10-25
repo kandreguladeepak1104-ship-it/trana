@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRANA | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .table-card > .card-top { padding: 22px; }
+        .table-card .card-top h2 { font-size: 18px; }
+        .table-card .card-top p { margin-top: 5px; color: #7b827a; font-size: 12px; }
+        .table-row { font-size: 12px; }
+        .table-row .paper-name strong { font-size: 13px; }
+        .view-all-row { padding: 16px 22px; border-top: 1px solid #edf0eb; text-align: right; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">TRANA</div>
+        <p class="menu-title">MAIN MENU</p>
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item active"><span>▦</span> Dashboard</a>
+            <a href="papers.html" class="menu-item"><span>📄</span> Papers</a>
+            <a href="upload.html" class="menu-item"><span>＋</span> Upload Papers</a>
+            <a href="encryption.html" class="menu-item"><span>🔐</span> Encryption</a>
+            <a href="scheduled.html" class="menu-item"><span>◷</span> Scheduled</a>
+        </nav>
+        <p class="menu-title security-title">SYSTEM</p>
+        <nav class="sidebar-menu">
+            <a href="settings.html" class="menu-item"><span>⚙</span> Settings</a>
+            <a href="login.html" class="menu-item logout" onclick="logout(event)"><span>↪</span> Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="secure-dot"></div>
+            <div><strong>System Secure</strong><p>TRANA v2.4</p></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="welcome-small">TRANA ADMINISTRATION</p>
+                <h1>Dashboard</h1>
+            </div>
+            <div class="profile">
+                <div class="notification">♢</div>
+                <div class="avatar" data-admin-initial>A</div>
+                <div class="profile-info">
+                    <strong data-admin-name>Administrator</strong>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="welcome-card">
+            <div>
+                <p class="welcome-label">SECURE ASSESSMENT MANAGEMENT</p>
+                <h2>Welcome back, <span data-admin-name>Administrator</span>.</h2>
+                <p>Manage, encrypt and securely deliver your examination papers from one place.</p>
+            </div>
+            <div class="welcome-lock">🔐</div>
+        </section>
+
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-info"><span>Total Papers</span><h2 id="totalPapers">0</h2></div>
+                <div class="stat-icon">📄</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info"><span>Encrypted Papers</span><h2 id="encryptedPapers">0</h2></div>
+                <div class="stat-icon">🔐</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info"><span>Scheduled</span><h2 id="scheduledPapers">0</h2></div>
+                <div class="stat-icon">📅</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info"><span>Delivered</span><h2 id="deliveredPapers">0</h2></div>
+                <div class="stat-icon">✓</div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <div>
+                    <p class="section-label">QUICK ACTIONS</p>
+                    <h2>Manage your papers</h2>
+                </div>
+            </div>
+            <div class="actions">
+                <a href="upload.html" class="action-card">
+                    <div class="action-icon upload">↑</div>
+                    <div><h3>Upload Paper</h3><p>Add a new examination paper.</p></div>
+                    <span class="arrow">→</span>
+                </a>
+                <a href="encryption.html" class="action-card">
+                    <div class="action-icon encrypt">🔐</div>
+                    <div><h3>Encrypt Papers</h3><p>View encryption status.</p></div>
+                    <span class="arrow">→</span>
+                </a>
+                <a href="scheduled.html" class="action-card">
+                    <div class="action-icon schedule">◷</div>
+                    <div><h3>Schedule Release</h3><p>Set a secure release time.</p></div>
+                    <span class="arrow">→</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="table-card">
+            <div class="section-header card-top">
+                <div>
+                    <h2>Examination Papers</h2>
+                    <p>Most recently uploaded papers</p>
+                </div>
+                <a href="upload.html" class="upload-btn">+ Upload Paper</a>
+            </div>
+
+            <div id="recentTable" hidden>
+                <div class="table-head">
+                    <div>Paper</div>
+                    <div>Subject</div>
+                    <div>Exam Date</div>
+                    <div>Status</div>
+                </div>
+                <div id="recentRows"></div>
+                <div class="view-all-row">
+                    <a href="papers.html" class="view-all">View all papers →</a>
+                </div>
+            </div>
+
+            <div class="empty-state" id="emptyState" hidden>
+                <div class="empty-icon">📄</div>
+                <h3>No examination papers yet</h3>
+                <p>No papers have been uploaded to the system. Upload an examination paper to get started.</p>
+                <a href="upload.html" class="upload-btn">+ Upload Paper</a>
+            </div>
+        </section>
+
+        <div class="security-footer">
+            <div>
+                <strong>🔒 TRANA Security</strong>
+                <span>AES-256 &nbsp;•&nbsp; SHA-256 &nbsp;•&nbsp; Digital Signatures</span>
+            </div>
+            <span class="system-status">● All systems operational</span>
+        </div>
+
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        requireLogin();
+
+        async function renderDashboard() {
+            const papers = await api("/papers");
+
+            document.getElementById("totalPapers").textContent = papers.length;
+            document.getElementById("encryptedPapers").textContent = papers.filter(p => p.encrypted).length;
+            document.getElementById("scheduledPapers").textContent = papers.filter(p => p.scheduled).length;
+            document.getElementById("deliveredPapers").textContent = papers.filter(p => p.delivered).length;
+
+            const hasPapers = papers.length > 0;
+            document.getElementById("recentTable").hidden = !hasPapers;
+            document.getElementById("emptyState").hidden = hasPapers;
+
+            document.getElementById("recentRows").innerHTML = papers.slice(0, 5).map(paper => `
+                <div class="table-row">
+                    ${paperNameCell(paper)}
+                    <div>${escapeHtml(paper.subject)}</div>
+                    <div>${formatExamDate(paper.examAt)}</div>
+                    <div>${statusBadge(paper)}</div>
+                </div>
+            `).join("");
+        }
+
+        renderDashboard().catch(err => alert(err.message));
+    </script>
+
+</body>
+</html>

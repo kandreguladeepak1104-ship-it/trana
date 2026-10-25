@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRANA | Papers</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .papers-page { padding: 30px 35px; }
+        .page-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 25px; }
+        .page-heading h2 { font-size: 22px; margin-bottom: 7px; }
+        .page-heading p { color: #7b827a; font-size: 14px; }
+        .paper-count { color: #7b827a; font-size: 13px; font-weight: 600; text-align: right; margin-bottom: 10px; }
+        .papers-table .table-head,
+        .papers-table .table-row { grid-template-columns: 2.2fr 1.2fr 1.3fr 1.2fr 1.4fr; padding: 15px 22px; }
+        .papers-table .table-row { font-size: 12px; }
+        .papers-table .table-row .paper-name strong { font-size: 13px; }
+        .row-actions { display: flex; gap: 14px; align-items: center; }
+        .row-actions button { background: none; border: none; padding: 0; font: inherit; font-weight: 600; cursor: pointer; }
+        .row-actions .download { color: #536b50; }
+        .row-actions .delete { color: #a2513f; }
+        .row-actions .locked { color: #a7ada5; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">TRANA</div>
+        <p class="menu-title">MAIN MENU</p>
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item"><span>▦</span> Dashboard</a>
+            <a href="papers.html" class="menu-item active"><span>📄</span> Papers</a>
+            <a href="upload.html" class="menu-item"><span>＋</span> Upload Papers</a>
+            <a href="encryption.html" class="menu-item"><span>🔐</span> Encryption</a>
+            <a href="scheduled.html" class="menu-item"><span>◷</span> Scheduled</a>
+        </nav>
+        <p class="menu-title security-title">SYSTEM</p>
+        <nav class="sidebar-menu">
+            <a href="settings.html" class="menu-item"><span>⚙</span> Settings</a>
+            <a href="login.html" class="menu-item logout" onclick="logout(event)"><span>↪</span> Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="secure-dot"></div>
+            <div><strong>System Secure</strong><p>TRANA v2.4</p></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="welcome-small">TRANA ADMINISTRATION</p>
+                <h1>Papers</h1>
+            </div>
+            <div class="profile">
+                <div class="notification">♢</div>
+                <div class="avatar" data-admin-initial>A</div>
+                <div class="profile-info">
+                    <strong data-admin-name>Administrator</strong>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="papers-page">
+
+            <div class="page-heading">
+                <div>
+                    <h2>Examination Papers</h2>
+                    <p>Manage all examination papers in TRANA.</p>
+                </div>
+                <div>
+                    <p class="paper-count" id="paperCount">0 papers</p>
+                    <a href="upload.html" class="upload-btn">+ Upload Paper</a>
+                </div>
+            </div>
+
+            <div class="table-card papers-table">
+                <div id="papersTable" hidden>
+                    <div class="table-head">
+                        <div>Paper</div>
+                        <div>Subject</div>
+                        <div>Exam Date</div>
+                        <div>Status</div>
+                        <div>Actions</div>
+                    </div>
+                    <div id="papersRows"></div>
+                </div>
+                <div class="empty-state" id="emptyState" hidden>
+                    <div class="empty-icon">📄</div>
+                    <h3>No papers uploaded yet</h3>
+                    <p>Examination papers uploaded to TRANA will appear here.</p>
+                    <a href="upload.html" class="upload-btn">+ Upload Paper</a>
+                </div>
+            </div>
+
+            <a href="dashboard.html" class="view-all" style="display:inline-block;margin-top:25px;">← Back to Dashboard</a>
+
+        </section>
+
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        requireLogin();
+
+        const papersById = {};
+
+        async function renderPapers() {
+            const papers = await api("/papers");
+
+            papers.forEach(p => papersById[p.id] = p);
+
+            document.getElementById("paperCount").textContent =
+                papers.length + (papers.length === 1 ? " paper" : " papers");
+
+            const hasPapers = papers.length > 0;
+            document.getElementById("papersTable").hidden = !hasPapers;
+            document.getElementById("emptyState").hidden = hasPapers;
+
+            const now = Date.now();
+
+            document.getElementById("papersRows").innerHTML = papers.map(paper => {
+                const released = paper.scheduled && new Date(paper.releaseAt).getTime() <= now;
+
+                const action = released
+                    ? `<button class="download" onclick="downloadPaper(${paper.id})">⬇ Download</button>`
+                    : `<span class="locked">${paper.scheduled ? "Locked until release" : "Not scheduled"}</span>`;
+
+                return `
+                <div class="table-row">
+                    ${paperNameCell(paper)}
+                    <div>${escapeHtml(paper.subject)}</div>
+                    <div>${formatExamDate(paper.examAt)}</div>
+                    <div>${statusBadge(paper)}</div>
+                    <div class="row-actions">
+                        ${action}
+                        <button class="delete" onclick="deletePaper(${paper.id})">Delete</button>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        async function downloadPaper(id) {
+            const paper = papersById[id];
+            try {
+                const res = await fetch(API_BASE + "/papers/" + id + "/download", {
+                    headers: { "Authorization": "Bearer " + localStorage.getItem("tranaToken") }
+                });
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || "Download failed");
+                }
+
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = paper ? paper.fileName : "paper";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+
+                renderPapers();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function deletePaper(id) {
+            if (!confirm("Delete this paper? This cannot be undone.")) return;
+            try {
+                await api("/papers/" + id, { method: "DELETE" });
+                renderPapers();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        renderPapers().catch(err => alert(err.message));
+    </script>
+
+</body>
+</html>

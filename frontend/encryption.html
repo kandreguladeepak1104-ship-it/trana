@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TRANA | Encryption</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            <h2>TRANA</h2>
+            <span>SECURE EXAM SYSTEM</span>
+        </div>
+
+        <nav class="sidebar-menu">
+
+            <a href="dashboard.html" class="menu-item">
+                <span>⌂</span>
+                Dashboard
+            </a>
+
+            <a href="papers.html" class="menu-item">
+                <span>📄</span>
+                Papers
+            </a>
+
+            <a href="upload.html" class="menu-item">
+                <span>＋</span>
+                Upload Papers
+            </a>
+
+            <a href="encryption.html" class="menu-item active">
+                <span>🔐</span>
+                Encryption
+            </a>
+
+            <a href="scheduled.html" class="menu-item">
+                <span>📅</span>
+                Scheduled
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <a href="settings.html" class="menu-item">
+                <span>⚙</span>
+                Settings
+            </a>
+
+            <a href="login.html" class="menu-item logout" onclick="event.preventDefault(); logout();"><span>↪</span> Logout</a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="main-content">
+
+        <div class="topbar">
+
+            <div>
+                <span class="top-label">TRANA ADMINISTRATION</span>
+                <h1>Encryption</h1>
+            </div>
+
+            <div class="admin">
+
+                <div class="admin-avatar">
+                    A
+                </div>
+
+                <div>
+                    <strong>Administrator</strong>
+                    <small>System Admin</small>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ENCRYPTION PAGE -->
+
+        <section class="encryption-page">
+
+            <div class="page-heading">
+
+                <h2>Paper Encryption</h2>
+
+                <p>
+                    Secure examination papers before scheduling their release.
+                </p>
+
+            </div>
+
+
+            <!-- SECURITY CARD -->
+
+            <div class="encryption-info">
+
+                <div class="security-icon">
+                    🔐
+                </div>
+
+                <div>
+
+                    <h3>Secure Encryption</h3>
+
+                    <p>
+                        TRANA protects examination papers using
+                        AES-256 encryption with secure key management.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- PAPERS -->
+
+            <div class="encryption-card">
+
+                <div class="card-heading">
+
+                    <div>
+                        <h3>Examination Papers</h3>
+                        <p>Select a paper to encrypt.</p>
+                    </div>
+
+                </div>
+
+
+                <div id="paperList">
+
+                    <!-- Papers will appear here -->
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, ch => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+            }[ch]));
+        }
+
+        function loadPapers() {
+
+            const papers =
+                JSON.parse(
+                    localStorage.getItem("tranaPapers")
+                ) || [];
+
+            const paperList =
+                document.getElementById("paperList");
+
+
+            if (papers.length === 0) {
+
+                paperList.innerHTML = `
+                    
+                    <div class="no-papers">
+
+                        <div>📄</div>
+
+                        <h3>No papers available</h3>
+
+                        <p>
+                            Upload an examination paper
+                            before encrypting it.
+                        </p>
+
+                        <a href="upload.html">
+                            + Upload Paper
+                        </a>
+
+                    </div>
+
+                `;
+
+                return;
+            }
+
+
+            paperList.innerHTML = "";
+
+
+            papers.forEach((paper, index) => {
+
+                const encrypted =
+                    paper.encrypted === true;
+
+
+                const row =
+                    document.createElement("div");
+
+                row.className =
+                    "encryption-row";
+
+
+                row.innerHTML = `
+
+                    <div class="paper-details">
+
+                        <div class="paper-icon">
+                            📄
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                ${escapeHtml(paper.name)}
+                            </strong>
+
+                            <span>
+                                ${escapeHtml(paper.subject)}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="encryption-status">
+
+                        ${
+                            encrypted
+                            ?
+                            `<span class="status encrypted">
+                                🔒 Encrypted
+                            </span>`
+                            :
+                            `<button
+                                class="encrypt-btn"
+                                onclick="encryptPaper(${index})">
+
+                                🔐 Encrypt
+
+                            </button>`
+                        }
+
+                    </div>
+
+                `;
+
+
+                paperList.appendChild(row);
+
+            });
+
+        }
+
+
+        function encryptPaper(index) {
+
+            let papers =
+                JSON.parse(
+                    localStorage.getItem("tranaPapers")
+                ) || [];
+
+
+            if (!papers[index]) {
+                return;
+            }
+
+
+            papers[index].encrypted = true;
+
+
+            localStorage.setItem(
+                "tranaPapers",
+                JSON.stringify(papers)
+            );
+
+
+            alert(
+                "Paper encrypted successfully!"
+            );
+
+
+            loadPapers();
+
+        }
+
+
+        function logout() {
+
+            const confirmLogout =
+                confirm(
+                    "Are you sure you want to logout?"
+                );
+
+
+            if (confirmLogout) {
+
+                window.location.href =
+                    "login.html";
+
+            }
+
+        }
+
+
+        loadPapers();
+
+    </script>
+
+</body>
+
+</html>

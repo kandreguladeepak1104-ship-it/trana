@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRANA | Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .settings-page { padding: 30px 35px; }
+        .settings-page .page-heading { margin-bottom: 25px; }
+        .settings-page .page-heading h2 { font-size: 22px; margin-bottom: 7px; }
+        .settings-page .page-heading p { color: #7b827a; font-size: 14px; }
+        .settings-stack { display: grid; gap: 25px; max-width: 850px; }
+        .settings-card { background: white; border: 1px solid #e5e8df; border-radius: 14px; padding: 28px; }
+        .settings-card h3 { font-size: 17px; margin-bottom: 8px; }
+        .settings-card p { color: #5f6a5d; font-size: 14px; line-height: 1.6; }
+        .settings-card .muted { color: #7b827a; font-size: 13px; margin-top: 6px; }
+        .danger-btn { margin-top: 18px; padding: 12px 20px; border: 1px solid #e0c5bd; border-radius: 8px; background: white; color: #a2513f; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .danger-btn:hover { background: #fbf3f0; }
+        .danger-btn:disabled { opacity: 0.6; cursor: default; }
+        .status-line { min-height: 18px; margin-top: 12px; font-size: 13px; color: #536b50; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">TRANA</div>
+        <p class="menu-title">MAIN MENU</p>
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item"><span>▦</span> Dashboard</a>
+            <a href="papers.html" class="menu-item"><span>📄</span> Papers</a>
+            <a href="upload.html" class="menu-item"><span>＋</span> Upload Papers</a>
+            <a href="encryption.html" class="menu-item"><span>🔐</span> Encryption</a>
+            <a href="scheduled.html" class="menu-item"><span>◷</span> Scheduled</a>
+        </nav>
+        <p class="menu-title security-title">SYSTEM</p>
+        <nav class="sidebar-menu">
+            <a href="settings.html" class="menu-item active"><span>⚙</span> Settings</a>
+            <a href="login.html" class="menu-item logout" onclick="logout(event)"><span>↪</span> Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="secure-dot"></div>
+            <div><strong>System Secure</strong><p>TRANA v2.4</p></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="welcome-small">TRANA ADMINISTRATION</p>
+                <h1>Settings</h1>
+            </div>
+            <div class="profile">
+                <div class="notification">♢</div>
+                <div class="avatar" data-admin-initial>A</div>
+                <div class="profile-info">
+                    <strong data-admin-name>Administrator</strong>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="settings-page">
+
+            <div class="page-heading">
+                <h2>Settings</h2>
+                <p>Your account and stored paper data.</p>
+            </div>
+
+            <div class="settings-stack">
+
+                <div class="settings-card">
+                    <h3>Account</h3>
+                    <p>Signed in as <strong data-admin-name>Administrator</strong>, with the Admin role.</p>
+                    <p class="muted">Accounts are created on the sign-up page. Changing your password isn't available yet.</p>
+                </div>
+
+                <div class="settings-card">
+                    <h3>Stored papers</h3>
+                    <p id="paperTotal">Loading...</p>
+                    <p class="muted">Deleting papers removes them from the server permanently.</p>
+                    <button class="danger-btn" id="deleteAllBtn">Delete all papers</button>
+                    <p class="status-line" id="dataStatus"></p>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        requireLogin();
+
+        const paperTotal = document.getElementById("paperTotal");
+        const deleteAllBtn = document.getElementById("deleteAllBtn");
+        const dataStatus = document.getElementById("dataStatus");
+
+        async function loadCount() {
+            const papers = await api("/papers");
+            paperTotal.textContent = papers.length + (papers.length === 1 ? " paper stored." : " papers stored.");
+            deleteAllBtn.disabled = papers.length === 0;
+            return papers;
+        }
+
+        deleteAllBtn.addEventListener("click", async function () {
+            if (!confirm("Delete ALL examination papers? This cannot be undone.")) return;
+
+            deleteAllBtn.disabled = true;
+            dataStatus.textContent = "Deleting...";
+
+            try {
+                const papers = await api("/papers");
+                for (const paper of papers) {
+                    await api("/papers/" + paper.id, { method: "DELETE" });
+                }
+                dataStatus.textContent = "All papers were deleted.";
+            } catch (err) {
+                dataStatus.textContent = err.message;
+            }
+
+            await loadCount().catch(() => {});
+        });
+
+        loadCount().catch(err => paperTotal.textContent = err.message);
+    </script>
+
+</body>
+</html>

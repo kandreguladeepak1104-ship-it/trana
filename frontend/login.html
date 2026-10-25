@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TRANA Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Login Box -->
+    <div class="login-box">
+
+        <h1>welcome back,</h1>
+        <p class="subtitle">haven't seen you in a while....</p>
+
+        <form id="loginForm" novalidate>
+
+            <p class="details">enter your details</p>
+
+            <label for="username">enter your username</label>
+            <input type="text" id="username" autocomplete="username" required>
+
+            <label for="password">enter your password</label>
+            <div class="password-box">
+                <input type="password" id="password" autocomplete="current-password" required>
+                <button type="button" class="eye-btn" id="togglePassword">👁</button>
+            </div>
+
+            <p id="message" style="margin-top:15px;font-size:14px;min-height:20px;color:#a2513f;"></p>
+
+            <button type="submit" id="loginBtn">LOGIN</button>
+
+        </form>
+
+        <a href="forgot-password.html" class="forgot">forgot password?</a>
+
+        <a href="sign.html" class="signup">
+            sign up or don't have an account?
+        </a>
+
+    </div>
+
+    <!-- System Overview -->
+    <div class="overview">
+
+        <p class="small-title">SYSTEM OVERVIEW</p>
+        <h2>TRANA</h2>
+
+        <p class="description">
+            Secure end-to-end encryption for high-stakes assessments -
+            from creation to delivery.
+        </p>
+
+        <hr>
+
+        <div class="security">🔒</div>
+
+        <div class="documents">
+            📄 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 📄
+        </div>
+
+        <div class="bottom">
+            🔒 AES-256 | RSA | SHA-256 | Digital Signatures
+            <span>🛡 Secure &nbsp; System v2.4</span>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="api.js"></script>
+<script>
+    const loginForm = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+    const message = document.getElementById("message");
+
+    document.getElementById("togglePassword").addEventListener("click", function () {
+        const password = document.getElementById("password");
+        const showing = password.type === "text";
+        password.type = showing ? "password" : "text";
+        this.textContent = showing ? "👁" : "🙈";
+    });
+
+    loginForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        message.textContent = "";
+
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+
+        if (!username || !password) {
+            message.textContent = "Enter your username and password.";
+            return;
+        }
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = "LOGGING IN...";
+
+        try {
+            const data = await api("/auth/login", {
+                method: "POST",
+                body: { username, password }
+            });
+
+            localStorage.setItem("tranaToken", data.token);
+            localStorage.setItem("tranaName", data.name);
+            window.location.href = "dashboard.html";
+
+        } catch (err) {
+            message.textContent = err.message;
+            loginBtn.disabled = false;
+            loginBtn.textContent = "LOGIN";
+        }
+    });
+</script>
+
+</body>
+</html>
