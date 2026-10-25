@@ -7,7 +7,6 @@ import time
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from pathlib import Path
-
 import jwt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from dotenv import load_dotenv
@@ -23,7 +22,7 @@ load_dotenv()
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 PAPER_KEY = os.getenv("PAPER_KEY", "")
-FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5500")
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "*")
 PORT = int(os.getenv("PORT", "3000"))
 
 if not JWT_SECRET:
@@ -47,7 +46,7 @@ EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB upload limit
-CORS(app, origins=[FRONTEND_ORIGIN, "http://localhost:3000", "http://127.0.0.1:3000"])
+CORS(app)
 db.init_app(app)
 
 
