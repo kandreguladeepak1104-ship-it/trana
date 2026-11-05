@@ -5,7 +5,7 @@
    Load this file before any page script.
    ============================================================ */
 
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = "https://trana-4.onrender.com";
 
 async function api(path, options = {}) {
     const method = options.method || "GET";
