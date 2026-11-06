@@ -59,3 +59,17 @@
     color: #3c98c4;
     text-decoration: none;
 }
+
+/* Center the signup card on the page (matches the login screen) */
+.container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+/* Keep the card inside the window on narrow screens */
+.signup-box {
+    max-width: 100%;
+}

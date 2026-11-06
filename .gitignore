@@ -1,0 +1,19 @@
+# secrets and local state
+backend/.env
+.env
+deploy-keys.local.env
+backend/instance/
+backend/trana.db
+*.db
+*.db.bak
+**/*.key
+
+# python
+backend/venv/
+backend/.venv/
+__pycache__/
+*.pyc
+
+# editors / os
+.DS_Store
+Thumbs.db

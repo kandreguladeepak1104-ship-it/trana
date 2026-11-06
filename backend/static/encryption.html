@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRANA | Encryption</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .encryption-page { padding: 30px 35px; }
+        .encryption-page .page-heading { margin-bottom: 25px; }
+        .encryption-page .page-heading h2 { font-size: 22px; margin-bottom: 7px; }
+        .encryption-page .page-heading p { color: #7b827a; font-size: 14px; }
+        .enc-info { display: flex; gap: 16px; align-items: center; background: white; border: 1px solid #e5e8df; border-radius: 14px; padding: 24px 28px; margin-bottom: 25px; max-width: 900px; }
+        .enc-info .enc-icon { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 14px; background: #eaf1e7; font-size: 24px; flex-shrink: 0; }
+        .enc-info h3 { font-size: 17px; margin-bottom: 6px; }
+        .enc-info p { color: #5f6a5d; font-size: 14px; line-height: 1.6; }
+        .enc-table { max-width: 900px; }
+        .enc-table .table-head,
+        .enc-table .table-row { grid-template-columns: 2.4fr 1.4fr 1.2fr; padding: 15px 22px; }
+        .enc-table .table-row { font-size: 12px; }
+        .enc-table .table-row .paper-name strong { font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">TRANA</div>
+        <p class="menu-title">MAIN MENU</p>
+        <nav class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item"><span>▦</span> Dashboard</a>
+            <a href="papers.html" class="menu-item"><span>📄</span> Papers</a>
+            <a href="upload.html" class="menu-item"><span>＋</span> Upload Papers</a>
+            <a href="encryption.html" class="menu-item active"><span>🔐</span> Encryption</a>
+            <a href="scheduled.html" class="menu-item"><span>◷</span> Scheduled</a>
+        </nav>
+        <p class="menu-title security-title">SYSTEM</p>
+        <nav class="sidebar-menu">
+            <a href="settings.html" class="menu-item"><span>⚙</span> Settings</a>
+            <a href="login.html" class="menu-item logout" onclick="logout(event)"><span>↪</span> Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="secure-dot"></div>
+            <div><strong>System Secure</strong><p>TRANA v2.4</p></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="welcome-small">TRANA ADMINISTRATION</p>
+                <h1>Encryption</h1>
+            </div>
+            <div class="profile">
+                <div class="notification">♢</div>
+                <div class="avatar" data-admin-initial>A</div>
+                <div class="profile-info">
+                    <strong data-admin-name>Administrator</strong>
+                    <span data-admin-role>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="encryption-page">
+
+            <div class="page-heading">
+                <h2>Paper Encryption</h2>
+                <p>Every paper is encrypted automatically when it is uploaded.</p>
+            </div>
+
+            <div class="enc-info">
+                <div class="enc-icon">🔐</div>
+                <div>
+                    <h3>Secure Encryption</h3>
+                    <p>TRANA protects examination papers with AES-256-GCM encryption. A paper is decrypted only when it is released.</p>
+                </div>
+            </div>
+
+            <div class="table-card enc-table">
+                <div id="encTable" hidden>
+                    <div class="table-head">
+                        <div>Paper</div>
+                        <div>Subject</div>
+                        <div>Status</div>
+                    </div>
+                    <div id="encRows"></div>
+                </div>
+                <div class="empty-state" id="emptyState" hidden>
+                    <div class="empty-icon">📄</div>
+                    <h3>No papers available</h3>
+                    <p>Upload an examination paper to see its encryption status here.</p>
+                    <a href="upload.html" class="upload-btn">+ Upload Paper</a>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        requireLogin();
+
+        async function loadPapers() {
+            const papers = await api("/papers");
+
+            document.getElementById("encTable").hidden = papers.length === 0;
+            document.getElementById("emptyState").hidden = papers.length > 0;
+
+            document.getElementById("encRows").innerHTML = papers.map(paper => `
+                <div class="table-row">
+                    ${paperNameCell(paper)}
+                    <div>${escapeHtml(paper.subject)}</div>
+                    <div>${statusBadge(paper)}</div>
+                </div>
+            `).join("");
+        }
+
+        loadPapers().catch(reportError);
+    </script>
+
+</body>
+</html>

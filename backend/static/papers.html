@@ -58,7 +58,7 @@
                 <div class="avatar" data-admin-initial>A</div>
                 <div class="profile-info">
                     <strong data-admin-name>Administrator</strong>
-                    <span>Admin</span>
+                    <span data-admin-role>Admin</span>
                 </div>
             </div>
         </header>
@@ -166,7 +166,7 @@
 
                 renderPapers();
             } catch (err) {
-                alert(err.message);
+                reportError(err);
             }
         }
 
@@ -176,11 +176,11 @@
                 await api("/papers/" + id, { method: "DELETE" });
                 renderPapers();
             } catch (err) {
-                alert(err.message);
+                reportError(err);
             }
         }
 
-        renderPapers().catch(err => alert(err.message));
+        renderPapers().catch(reportError);
     </script>
 
 </body>

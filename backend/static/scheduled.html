@@ -27,6 +27,7 @@
         .schedule-table .table-row { font-size: 12px; }
         .schedule-table .table-row .paper-name strong { font-size: 13px; }
         .link-btn { background: none; border: none; padding: 0; color: #a2513f; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .download-btn { background: none; border: none; padding: 0; color: #536b50; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
         .locked-note { display: flex; gap: 12px; align-items: center; padding: 16px; border-radius: 9px; background: #f1f5ed; border: 1px solid #dce5d7; font-size: 13px; color: #5f6a5d; }
         .release-state { font-size: 12px; font-weight: 600; }
         .release-state.waiting { color: #ad8d54; }
@@ -68,7 +69,7 @@
                 <div class="avatar" data-admin-initial>A</div>
                 <div class="profile-info">
                     <strong data-admin-name>Administrator</strong>
-                    <span>Admin</span>
+                    <span data-admin-role>Admin</span>
                 </div>
             </div>
         </header>
@@ -239,7 +240,7 @@
                     : '<span class="release-state waiting">◷ Waiting</span>';
 
                 const action = released
-                    ? '<span style="color:#7b827a;font-size:12px;">—</span>'
+                    ? `<button class="download-btn" onclick="downloadPaper(${p.id})">⬇ Download</button>`
                     : `<button class="link-btn" onclick="cancelSchedule(${p.id})">Cancel</button>`;
 
                 return `
@@ -311,14 +312,53 @@
                 await api("/papers/" + id + "/schedule", { method: "DELETE" });
                 renderSchedule();
             } catch (err) {
-                alert(err.message);
+                reportError(err);
+            }
+        }
+
+        async function downloadPaper(id) {
+            const paper = papersById[id];
+            const label = paper ? paper.name : "this paper";
+
+            if (!confirm("Download " + label + "?")) return;
+
+            try {
+                const res = await fetch(API_BASE + "/papers/" + id + "/download", {
+                    headers: { "Authorization": "Bearer " + localStorage.getItem("tranaToken") }
+                });
+
+                if (res.status === 401) {
+                    clearSession();
+                    sessionStorage.setItem("tranaNotice", "Your session has expired.");
+                    window.location.replace("login.html");
+                    return;
+                }
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || "Download failed");
+                }
+
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = paper ? paper.fileName : "paper";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+
+                renderSchedule();
+            } catch (err) {
+                reportError(err);
             }
         }
 
         /* Block past dates in the picker */
         releaseDate.min = todayString();
         fillTimeOptions();
-        renderSchedule().catch(err => alert(err.message));
+        renderSchedule().catch(reportError);
     </script>
 
 </body>

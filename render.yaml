@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: trana
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn --chdir backend app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /
+    disk:
+      name: trana-data
+      mountPath: /opt/render/project/src/backend/instance
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: TRANA_BASE_URL
+        sync: false
+      - key: TRANA_CORS_ORIGINS
+        sync: false
+      - key: TRANA_MASTER_KEY
+        sync: false
+      - key: TRANA_JWT_SECRET
+        sync: false
+      - key: TRANA_SMTP_HOST
+        sync: false
+      - key: TRANA_SMTP_PORT
+        value: "587"
+      - key: TRANA_SMTP_USER
+        sync: false
+      - key: TRANA_SMTP_PASSWORD
+        sync: false
+      - key: TRANA_SMTP_FROM
+        sync: false

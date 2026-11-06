@@ -1,11 +1,12 @@
 /* ============================================================
-   TRANA shared helpers (complete file)
+   TRANA shared helpers
    - api(): sends requests to the backend and shows real errors
    - login check, logout, and display helpers
    Load this file before any page script.
    ============================================================ */
 
-const API_BASE = "https://trana-4.onrender.com";
+/* Same origin as the page, so it works on localhost and when deployed. */
+const API_BASE = "/api";
 
 async function api(path, options = {}) {
     const method = options.method || "GET";
@@ -22,26 +23,27 @@ async function api(path, options = {}) {
         headers["Authorization"] = "Bearer " + token;
     }
 
-    console.log("API", method, path, token ? "(token sent)" : "(NO TOKEN)");
-
     let res;
     try {
         res = await fetch(API_BASE + path, { method, headers, body });
     } catch (err) {
-        throw new Error("Cannot reach the TRANA server. Is python app.py running?");
+        throw new Error("Cannot reach the TRANA server. Is the backend running?");
     }
 
     const data = await res.json().catch(() => ({}));
-    console.log("API result", res.status, data);
 
     if (!res.ok) {
         const message = data.error || ("Request failed (" + res.status + ")");
 
-        /* Token rejected: show the server's reason, then go to login */
+        /* Token rejected: clear it, tell the login page why, redirect once */
         if (res.status === 401 && path !== "/auth/login") {
-            localStorage.removeItem("tranaToken");
-            alert(message + "\n\nPlease log in again.");
-            window.location.href = "login.html";
+            clearSession();
+            sessionStorage.setItem("tranaNotice", message);
+            window.location.replace("login.html");
+
+            const expired = new Error(message);
+            expired.sessionExpired = true;
+            throw expired;
         }
 
         throw new Error(message);
@@ -50,11 +52,25 @@ async function api(path, options = {}) {
     return data;
 }
 
-/* ---------- Login and logout ---------- */
+/* ---------- Errors ---------- */
+
+/* Alerts once. An expired session is already redirecting, so stay quiet. */
+function reportError(err) {
+    if (err && err.sessionExpired) return;
+    alert((err && err.message) || "Something went wrong. Please try again.");
+}
+
+/* ---------- Session ---------- */
+
+function clearSession() {
+    localStorage.removeItem("tranaToken");
+    localStorage.removeItem("tranaName");
+    localStorage.removeItem("tranaRole");
+}
 
 function requireLogin() {
     if (!localStorage.getItem("tranaToken")) {
-        window.location.href = "login.html";
+        window.location.replace("login.html");
     }
 }
 
@@ -62,10 +78,18 @@ function logout(event) {
     if (event) event.preventDefault();
 
     if (confirm("Are you sure you want to logout?")) {
-        localStorage.removeItem("tranaToken");
-        localStorage.removeItem("tranaName");
-        window.location.href = "login.html";
+        clearSession();
+        window.location.replace("login.html");
     }
+}
+
+function roleLabel() {
+    const role = localStorage.getItem("tranaRole");
+
+    if (role === "admin") return "Admin";
+    if (role === "paper_setter") return "Paper Setter";
+
+    return role ? role : "Member";
 }
 
 /* ---------- Display helpers ---------- */
@@ -103,6 +127,7 @@ function paperNameCell(paper) {
 
 function applyProfile() {
     const name = localStorage.getItem("tranaName") || "Administrator";
+    const role = roleLabel();
 
     document.querySelectorAll("[data-admin-name]").forEach(el => {
         el.textContent = name;
@@ -110,6 +135,10 @@ function applyProfile() {
 
     document.querySelectorAll("[data-admin-initial]").forEach(el => {
         el.textContent = name.charAt(0).toUpperCase();
+    });
+
+    document.querySelectorAll("[data-admin-role]").forEach(el => {
+        el.textContent = role;
     });
 }
 

@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "TRANA backend (opens Chrome)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/app.py",
+            "cwd": "${workspaceFolder}/backend",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONUNBUFFERED": "1"
+            },
+            "serverReadyAction": {
+                "pattern": "Running on (http://[^ ]+)",
+                "uriFormat": "%s",
+                "action": "debugWithChrome",
+                "webRoot": "${workspaceFolder}/backend/static"
+            }
+        },
+        {
+            "name": "TRANA backend (no browser)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/app.py",
+            "cwd": "${workspaceFolder}/backend",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONUNBUFFERED": "1"
+            }
+        },
+        {
+            "name": "Chrome against TRANA (server already running)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://127.0.0.1:3000/",
+            "webRoot": "${workspaceFolder}/backend/static"
+        }
+    ]
+}

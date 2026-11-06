@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>TRANA | Sign up</title>
+
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="css(signup).css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <section class="signup-box">
+
+            <h1>create account</h1>
+
+            <p class="subtitle">
+                join the secure assessment workspace
+            </p>
+
+            <form id="signupForm" novalidate>
+
+                <p class="details">
+                    enter your details
+                </p>
+
+                <!-- Full Name -->
+                <label for="name">
+                    full name
+                </label>
+
+                <input
+                    id="name"
+                    name="name"
+                    autocomplete="name"
+                    required
+                    minlength="2"
+                    maxlength="80"
+                >
+
+
+                <!-- Username -->
+                <label for="username">
+                    username
+                </label>
+
+                <input
+                    id="username"
+                    name="username"
+                    autocomplete="username"
+                    required
+                    minlength="3"
+                    maxlength="30"
+                    pattern="[a-zA-Z0-9_.-]+"
+                >
+
+
+                <!-- Email -->
+                <label for="email">
+                    email address
+                </label>
+
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    required
+                    maxlength="120"
+                >
+
+
+                <!-- Password -->
+                <label for="password">
+                    password (8–128 characters)
+                </label>
+
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autocomplete="new-password"
+                    required
+                    minlength="8"
+                    maxlength="128"
+                >
+
+
+                <!-- Message -->
+                <p
+                    id="message"
+                    role="status"
+                    aria-live="polite"
+                    style="min-height:20px"
+                ></p>
+
+
+                <!-- Submit -->
+                <button
+                    type="submit"
+                    id="signupBtn"
+                >
+                    CREATE ACCOUNT
+                </button>
+
+            </form>
+
+
+            <!-- Login Link -->
+            <a href="login.html" class="signup">
+                already have an account? log in
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <!-- API -->
+    <script src="api.js"></script>
+
+
+    <!-- Signup Logic -->
+    <script>
+
+        const form = document.getElementById("signupForm");
+
+        const btn = document.getElementById("signupBtn");
+
+        const msg = document.getElementById("message");
+
+
+        form.addEventListener("submit", async e => {
+
+            e.preventDefault();
+
+            msg.textContent = "";
+
+
+            // Collect form data
+            const body = {
+
+                name: form.name.value.trim(),
+
+                username: form.username.value.trim().toLowerCase(),
+
+                email: form.email.value.trim().toLowerCase(),
+
+                password: form.password.value
+
+            };
+
+
+            // Basic validation
+            if (
+                body.name.length < 2 ||
+                body.username.length < 3 ||
+                !body.email ||
+                body.password.length < 8
+            ) {
+
+                msg.style.color = "#a2513f";
+
+                msg.textContent =
+                    "Please complete all fields using the required lengths.";
+
+                return;
+
+            }
+
+
+            // Loading state
+            btn.disabled = true;
+
+            btn.textContent = "CREATING...";
+
+
+            try {
+
+                // Send signup request
+              const result = await api("/auth/signup", {
+    method: "POST",
+    body
+});
+
+                // Success
+                msg.style.color = "#536b50";
+
+                msg.textContent =
+                    result.message ||
+                    "Account created. You can now log in.";
+
+
+                form.reset();
+
+
+            } catch (err) {
+
+                // Error
+                msg.style.color = "#a2513f";
+
+                msg.textContent = err.message;
+
+
+            } finally {
+
+                // Restore button
+                btn.disabled = false;
+
+                btn.textContent = "CREATE ACCOUNT";
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
